@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import Image from "next/Image"
+import Image from "next/image"
 
 const ProfileInfo = async () => {
   const session = await auth();
