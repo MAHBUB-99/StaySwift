@@ -10,6 +10,7 @@ A modern hotel booking platform built with Next.js, StaySwift offers a seamless 
 - 🏨 **Hotel Details**: View detailed hotel information, ratings, reviews, and photo galleries.
 - 📅 **Booking Management**: Effortlessly book hotels, view upcoming and past bookings, and manage reservations.
 - 🔐 **Authentication**: Secure user registration, login, and social authentication.
+- 🌐 **Google Login/Register**: Sign up or log in quickly using your Google account for a seamless experience.
 - 💳 **Payment Integration**: Safe and simple payment process for hotel bookings.
 - ⭐ **Ratings & Reviews**: Leave and read reviews to help others make informed decisions.
 - 📱 **Responsive Design**: Fully optimized for mobile, tablet, and desktop devices.
@@ -20,7 +21,7 @@ A modern hotel booking platform built with Next.js, StaySwift offers a seamless 
 
 - **Framework**: [Next.js](https://nextjs.org/) (App Router, Server Components)
 - **Database**: MongoDB
-- **Authentication**: NextAuth.js
+- **Authentication**: NextAuth.js (with Google provider)
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks
 - **API Routes**: RESTful endpoints with Next.js API routes
@@ -46,8 +47,7 @@ A modern hotel booking platform built with Next.js, StaySwift offers a seamless 
    ```
 
 3. **Set up environment variables:**
-
-   - Copy `.env.example` to `.env.local` and fill in your credentials (MongoDB URI, NextAuth secrets, etc).
+    - Create your own .env file and add AUTH_SECRET,MONGO_URI, GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
 
 4. **Run the development server:**
    ```bash
@@ -72,7 +72,7 @@ A modern hotel booking platform built with Next.js, StaySwift offers a seamless 
 
 StaySwift is ready for deployment on [Vercel](https://vercel.com/) or any platform supporting Next.js.
 
-- **Live Demo:** [https://stay-swift-chi.vercel.app/]https://stay-swift-chi.vercel.app/) <!-- Replace with your actual deployment link -->
+- **Live Demo:** [https://stayswift.vercel.app](https://stayswift.vercel.app) <!-- Replace with your actual deployment link -->
 
 ---
 
