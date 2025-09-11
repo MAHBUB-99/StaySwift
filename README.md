@@ -72,7 +72,7 @@ A modern hotel booking platform built with Next.js, StaySwift offers a seamless 
 
 StaySwift is ready for deployment on [Vercel](https://vercel.com/) or any platform supporting Next.js.
 
-- **Live Demo:** [https://stayswift.vercel.app](https://stayswift.vercel.app) <!-- Replace with your actual deployment link -->
+- **Live Demo:** [https://stay-swift-chi.vercel.app/](https://stay-swift-chi.vercel.app/)
 
 ---
 
