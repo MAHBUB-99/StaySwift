@@ -5,10 +5,11 @@ export default function Logout() {
   return (
     <button
       onClick={() => {
-        signOut({ callbackUrl: "http://localhost:3000/login" });
+        signOut({ callbackUrl: "/login" });
       }}
+      className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-surface"
     >
-      SignOut
+      Sign out
     </button>
   );
 }

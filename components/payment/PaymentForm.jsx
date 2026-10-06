@@ -1,116 +1,214 @@
 "use client";
 
+import { apiError } from "@/components/api-error";
+import { formatPrice } from "@/database/utils/stay";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const PaymentForm = ({ loggedInUser, hotelInfo, checkin, checkout, cost }) => {
+const digits = (value) => value.replace(/\D/g, "");
+
+// Card details are only checked for format in the browser; they are never
+// sent to the server or stored. Payment is simulated.
+function validateCard({ cardName, cardNumber, expiry, cvv }) {
+  if (!cardName.trim()) return "Enter the name on the card.";
+  const number = digits(cardNumber);
+  if (number.length < 13 || number.length > 19) return "Enter a valid card number.";
+  const match = expiry.match(/^(\d{2})\s*\/\s*(\d{2})$/);
+  if (!match) return "Enter the expiry date as MM/YY.";
+  const month = Number(match[1]);
+  const year = 2000 + Number(match[2]);
+  const now = new Date();
+  if (
+    month < 1 ||
+    month > 12 ||
+    year < now.getFullYear() ||
+    (year === now.getFullYear() && month < now.getMonth() + 1)
+  ) {
+    return "This card has expired.";
+  }
+  if (!/^\d{3,4}$/.test(cvv)) return "Enter the 3 or 4 digit security code.";
+  return "";
+}
+
+const PaymentForm = ({ loggedInUser, hotelId, roomType, stay, total }) => {
   const router = useRouter();
+  const [form, setForm] = useState({
+    guestName: loggedInUser?.name ?? "",
+    guestPhone: "",
+    cardName: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+  });
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
 
   async function onSubmit(event) {
     event.preventDefault();
-    try {
-      const formData = new FormData(event.currentTarget);
-      
-      const hotelId = hotelInfo?.id;
-      const userId = loggedInUser?.id;
-      const checkin = formData.get("checkin");
-      const checkout = formData.get("checkout");
+    if (!form.guestName.trim()) {
+      setError("Enter the name of the main guest.");
+      return;
+    }
+    if (!/^\+?[\d\s()-]{7,20}$/.test(form.guestPhone.trim())) {
+      setError("Enter a valid phone number.");
+      return;
+    }
+    const cardError = validateCard(form);
+    if (cardError) {
+      setError(cardError);
+      return;
+    }
 
-      const res = await fetch("/api/auth/payment", {
+    setError("");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/bookings", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hotelId,
-          userId,
-          checkin,
-          checkout,
+          roomType,
+          checkin: stay.checkin,
+          checkout: stay.checkout,
+          rooms: stay.rooms,
+          adults: stay.adults,
+          children: stay.children,
+          guestName: form.guestName.trim(),
+          guestPhone: form.guestPhone.trim(),
         }),
       });
 
-      res.status === 201 && router.push("/bookings");
-    } catch (error) {
-      console.error(error);
-      setError(error.message);
+      if (res.status === 201) {
+        router.push("/bookings?booked=1");
+        router.refresh();
+      } else {
+        setError(await apiError(res));
+        setSubmitting(false);
+      }
+    } catch (err) {
+      setError(err.message);
+      setSubmitting(false);
     }
   }
+
   return (
-    <form className="my-8" onSubmit={onSubmit}>
-      <div className="my-4 space-y-2">
-        <label htmlFor="name" className="block">
-          Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          value={loggedInUser?.name}
-          className="w-full border border-[#CCCCCC]/60 py-1 px-2 rounded-md"
-        />
-      </div>
+    <form className="space-y-6" onSubmit={onSubmit} noValidate>
+      <section className="card space-y-4 p-5">
+        <h2 className="text-lg font-bold">Who&apos;s checking in?</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="guestName" className="mb-1 block text-sm font-medium">
+              Full name
+            </label>
+            <input
+              id="guestName"
+              value={form.guestName}
+              onChange={set("guestName")}
+              autoComplete="name"
+              className="input"
+            />
+          </div>
+          <div>
+            <label htmlFor="guestPhone" className="mb-1 block text-sm font-medium">
+              Mobile phone
+            </label>
+            <input
+              id="guestPhone"
+              type="tel"
+              value={form.guestPhone}
+              onChange={set("guestPhone")}
+              autoComplete="tel"
+              className="input"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={loggedInUser?.email ?? ""}
+              readOnly
+              className="input bg-surface text-gray-600"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Your booking confirmation goes to this address.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      <div className="my-4 space-y-2">
-        <label htmlFor="email" className="block">
-          Email
-        </label>
-        <input
-          type="email"
-          id="email"
-          value={loggedInUser?.email}
-          className="w-full border border-[#CCCCCC]/60 py-1 px-2 rounded-md"
-        />
-      </div>
+      <section className="card space-y-4 p-5">
+        <h2 className="text-lg font-bold">Payment</h2>
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Demo checkout: no payment is taken and card details never leave your browser.
+        </p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label htmlFor="cardName" className="mb-1 block text-sm font-medium">
+              Name on card
+            </label>
+            <input
+              id="cardName"
+              value={form.cardName}
+              onChange={set("cardName")}
+              autoComplete="cc-name"
+              className="input"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="cardNumber" className="mb-1 block text-sm font-medium">
+              Card number
+            </label>
+            <input
+              id="cardNumber"
+              inputMode="numeric"
+              value={form.cardNumber}
+              onChange={set("cardNumber")}
+              autoComplete="cc-number"
+              className="input"
+            />
+          </div>
+          <div>
+            <label htmlFor="expiry" className="mb-1 block text-sm font-medium">
+              Expiry date
+            </label>
+            <input
+              id="expiry"
+              placeholder="MM/YY"
+              value={form.expiry}
+              onChange={set("expiry")}
+              autoComplete="cc-exp"
+              className="input"
+            />
+          </div>
+          <div>
+            <label htmlFor="cvv" className="mb-1 block text-sm font-medium">
+              Security code
+            </label>
+            <input
+              id="cvv"
+              inputMode="numeric"
+              value={form.cvv}
+              onChange={set("cvv")}
+              autoComplete="cc-csc"
+              className="input"
+            />
+          </div>
+        </div>
+      </section>
 
-      <div className="my-4 space-y-2">
-        <span>Check in</span>
-        <h4 className="mt-2">
-          <input type="date" value={checkin} name="checkin" id="checkin" />
-        </h4>
-      </div>
+      {error && (
+        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </p>
+      )}
 
-      <div className="my-4 space-y-2">
-        <span>Checkout</span>
-        <h4 className="mt-2">
-          <input type="date" value={checkout} name="checkout" id="checkout" />
-        </h4>
-      </div>
-
-      <div className="my-4 space-y-2">
-        <label htmlFor="card" className="block">
-          Card Number
-        </label>
-        <input
-          type="text"
-          id="card"
-          className="w-full border border-[#CCCCCC]/60 py-1 px-2 rounded-md"
-        />
-      </div>
-
-      <div className="my-4 space-y-2">
-        <label htmlFor="expiry" className="block">
-          Expiry Date
-        </label>
-        <input
-          type="text"
-          id="expiry"
-          className="w-full border border-[#CCCCCC]/60 py-1 px-2 rounded-md"
-        />
-      </div>
-
-      <div className="my-4 space-y-2">
-        <label htmlFor="cvv" className="block">
-          CVV
-        </label>
-        <input
-          type="text"
-          id="cvv"
-          className="w-full border border-[#CCCCCC]/60 py-1 px-2 rounded-md"
-        />
-      </div>
-
-      <button type="submit" className="btn-primary w-full">
-        Pay Now (${cost})
+      <button type="submit" disabled={submitting} className="btn-primary w-full py-3 text-base">
+        {submitting ? "Booking…" : `Complete booking · ${formatPrice(total)}`}
       </button>
     </form>
   );

@@ -1,31 +1,26 @@
-import Image from "next/image";
+import HotelImage from "../HotelImage";
 
-const Gallery = ({ gallery }) => {
-  const [mainPic, ...restPics] = gallery;
+const Gallery = ({ images = [], name }) => {
+  if (images.length === 0) return null;
+  const [mainPic, ...restPics] = images;
   return (
-    <section className="container">
-      <div className="grid grid-cols-2 imageshowCase">
-        <Image
+    <div className="grid h-[260px] grid-cols-1 gap-2 overflow-hidden rounded-2xl md:h-[420px] md:grid-cols-2">
+      <div className="relative">
+        <HotelImage
           src={mainPic}
-          className="h-[400px]"
-          alt="Main Pic"
-          width={400}
-          height={400}
+          alt={name}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
         />
-        <div className="grid grid-cols-2 grid-rows-2 h-[400px]">
-          {restPics.map((image) => (
-            <Image
-              key={image}
-              src={image}
-              className="h-[400px]"
-              alt="Sub Pics"
-              width={400}
-              height={400}
-            />
-          ))}
-        </div>
       </div>
-    </section>
+      <div className="hidden grid-cols-2 grid-rows-2 gap-2 md:grid">
+        {restPics.slice(0, 4).map((image, index) => (
+          <div key={image} className="relative">
+            <HotelImage src={image} alt={`${name} photo ${index + 2}`} sizes="25vw" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

@@ -2,38 +2,46 @@
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { safeCallbackUrl } from "./callback-url";
 
 const SocialLogins = ({ mode }) => {
-  const handleAuth = (event) => {
-    signIn("google", { callbackUrl: "http://localhost:3000/bookings" });
-  };
+  const callbackParam = useSearchParams().get("callbackUrl");
+  const callbackUrl = safeCallbackUrl(callbackParam);
+  const keep = callbackParam ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : "";
+
   return (
     <>
-      <div className="text-center text-xs text-gray-500">
+      <div className="my-4 flex items-center gap-3 text-xs text-gray-500">
+        <span className="h-px flex-1 bg-gray-200" />
+        or
+        <span className="h-px flex-1 bg-gray-200" />
+      </div>
+      <button
+        type="button"
+        onClick={() => signIn("google", { callbackUrl })}
+        className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 py-2.5 font-medium hover:bg-surface"
+      >
+        <Image src="/google.png" alt="" width={20} height={20} />
+        Continue with Google
+      </button>
+      <p className="mt-5 text-center text-sm text-gray-600">
         {mode === "register" ? (
-          <Link className="underline mr-1" href="/login">
-            Login
-          </Link>
+          <>
+            Already have an account?{" "}
+            <Link className="link" href={`/login${keep}`}>
+              Sign in
+            </Link>
+          </>
         ) : (
-          <Link className="underline mr-1" href="/register">
-            Register
-          </Link>
+          <>
+            New to StaySwift?{" "}
+            <Link className="link" href={`/register${keep}`}>
+              Create an account
+            </Link>
+          </>
         )}
-        or Signup with
-      </div>
-      <div className="flex gap-4">
-        <button className=" w-full mt-4 py-2 border-gray-600/30 border rounded-md flex items-center gap-2 justify-center">
-          <Image src="/fb.png" alt="facebook" width={40} height={40} />
-          <span>Facebook</span>
-        </button>
-        <button
-          onClick={handleAuth}
-          className=" w-full mt-4 py-2 border-gray-600/30 border rounded-md flex items-center gap-2 justify-center"
-        >
-          <Image src="/google.png" alt="google" width={40} height={40} />
-          <span>Google</span>
-        </button>
-      </div>
+      </p>
     </>
   );
 };

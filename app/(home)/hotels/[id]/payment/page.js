@@ -1,40 +1,58 @@
 import { auth } from "@/auth";
 import PaymentForm from "@/components/payment/PaymentForm";
-import { getHotelById, getUserByEmail } from "@/database/queries";
-import { getDayDifference } from "@/database/utils/data-util";
-import { redirect } from "next/navigation";
+import PriceSummary from "@/components/payment/PriceSummary";
+import {
+  getHotelById,
+  getRoomOptionsForHotel,
+  getUserByEmail,
+} from "@/database/queries";
+import { parseStayParams, stayQuery } from "@/database/utils/stay";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
-export default async function PaymentPage({
-  params: { id },
-  searchParams: { checkin, checkout },
-}) {
+export const metadata = { title: "Secure booking" };
+
+export default async function PaymentPage({ params: { id }, searchParams }) {
+  const stay = parseStayParams(searchParams);
+  const query = stayQuery(stay);
+  const hotelHref = `/hotels/${id}?${query}#rooms`;
+
   const session = await auth();
   if (!session) {
-    redirect("/login");
+    const here = `/hotels/${id}/payment?room=${searchParams.room ?? ""}&${query}`;
+    redirect(`/login?callbackUrl=${encodeURIComponent(here)}`);
   }
-  const loggedInUser = await getUserByEmail(session?.user?.email);
-  const hotelInfo = await getHotelById(id, checkin, checkout);
-  let cost = (hotelInfo?.highRate + hotelInfo?.lowRate) / 2;
-  if (checkin && checkout) {
-    const days = getDayDifference(checkin, checkout);
-    cost = cost * days;
+  if (!stay.checkin) {
+    redirect(hotelHref);
   }
+
+  const hotel = await getHotelById(id);
+  if (!hotel) {
+    notFound();
+  }
+  const rooms = await getRoomOptionsForHotel(hotel, stay);
+  const room = rooms.find((option) => option.key === searchParams.room);
+  if (!room?.bookable) {
+    redirect(hotelHref);
+  }
+  const loggedInUser = await getUserByEmail(session.user.email);
+
   return (
-    <section className="container">
-      <div className="p-6 rounded-lg max-w-xl mx-auto my-12 mt-[100px]">
-        <h2 className="font-bold text-2xl">Payment Details</h2>
-        <p className="text-gray-600 text-sm">
-          You have picked <b>{hotelInfo?.name}</b> and Total price is{" "}
-          <b>${cost}</b> for {getDayDifference(checkin, checkout)} day(s)
-        </p>
+    <div className="container py-6">
+      <Link href={hotelHref} className="link text-sm">
+        ← Back to rooms
+      </Link>
+      <h1 className="mt-3 text-3xl font-bold">Secure booking</h1>
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
         <PaymentForm
           loggedInUser={loggedInUser}
-          hotelInfo={hotelInfo}
-          checkin={checkin}
-          checkout={checkout}
-          cost={cost}
+          hotelId={hotel.id}
+          roomType={room.key}
+          stay={stay}
+          total={room.price.total}
         />
+        <PriceSummary hotel={hotel} room={room} stay={stay} price={room.price} />
       </div>
-    </section>
+    </div>
   );
 }

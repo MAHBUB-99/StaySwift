@@ -2,61 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-
-@layer utilities {
-  nav {
-    @apply max-w-7xl flex mx-auto justify-between px-4 py-4 absolute top-0 w-full left-0 right-0 z-50;
+@layer base {
+  body {
+    @apply bg-surface text-navy;
   }
+}
 
-  nav img {
-    @apply h-[35px] md:h-[40px] lg:h-[50px];
-  }
-  nav ul {
-    @apply hidden md:flex items-center gap-6;
-  }
-
-  nav ul .login {
-    @apply bg-primary px-6 py-3 text-white font-bold rounded-md;
-  }
-
+@layer components {
   .container {
     @apply max-w-7xl mx-auto w-full px-4;
   }
 
-  /* Input */
-  select {
-    @apply w-full px-4 py-2 rounded-md border border-black/20 bg-transparent;
-  }
-
-  input[type="date"] {
-    @apply w-full px-4 py-2 rounded-md border border-black/20 bg-transparent;
-  }
-
-  .search-btn {
-    @apply bg-primary px-8 py-3 rounded-md block mx-auto text-white font-bold -translate-y-1/2 shadow-lg hover:shadow-primary/50 active:scale-95 transition-all;
+  .card {
+    @apply bg-white rounded-2xl border border-black/5 shadow-sm;
   }
 
   .btn-primary {
-    @apply bg-primary px-8 py-2 rounded-md block text-white font-bold shadow-lg hover:shadow-primary/50 active:scale-95 transition-all;
-  }
-  .btn-disabled{
-    @apply bg-gray-500 px-8 py-2 rounded-md block text-white font-bold shadow-lg hover:shadow-primary/50 active:scale-95 transition-all;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 font-semibold text-white transition-colors hover:bg-primary-dark active:scale-[.98] disabled:cursor-not-allowed disabled:bg-gray-300;
   }
 
-  #searchParams {
-    @apply bg-white w-full h-full py-10 lg:py-12 px-6 lg:px-8 rounded-xl border border-black/10 shadow-lg lg:flex items-center [&>*]:flex-1 [&>*]:px-4 [&>div>span]:mb-3 space-y-5 lg:space-y-0;
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-navy px-6 py-2.5 font-semibold text-navy transition-colors hover:bg-navy/5;
   }
 
-  #searchParams span {
-    @apply font-bold;
+  .btn-disabled {
+    @apply inline-flex items-center justify-center rounded-full bg-gray-200 px-6 py-2.5 font-semibold text-gray-500 cursor-not-allowed;
   }
 
-  .imageshowCase {
-    @apply h-[400px];
+  .link {
+    @apply font-medium text-blue-700 hover:underline;
   }
 
-  .imageshowCase img {
-    @apply h-full min-h-full w-full min-w-full object-cover;
+  /* Search field: small label above the value, like a booking form. */
+  .field {
+    @apply relative flex h-14 flex-col justify-end rounded-xl border border-gray-300 bg-white px-4 pb-2 text-left focus-within:border-navy focus-within:ring-1 focus-within:ring-navy;
+  }
+
+  .field-label {
+    @apply absolute left-4 top-2 text-xs text-gray-500;
+  }
+
+  .field input,
+  .field select,
+  .field button {
+    @apply w-full bg-transparent text-sm font-semibold text-navy outline-none;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy;
   }
 
   .login-form {
@@ -64,13 +57,14 @@
   }
 
   .login-form div {
-    @apply flex flex-col gap-2 my-2;
+    @apply flex flex-col gap-1 my-2;
+  }
+
+  .login-form label {
+    @apply text-sm font-medium;
   }
 
   .login-form input {
-    @apply border border-black/20 rounded-md px-4 py-2;
-  }
-  button:disabled{
-    @apply bg-gray-500 cursor-default
+    @apply input;
   }
 }
