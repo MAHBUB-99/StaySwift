@@ -1,81 +1,136 @@
 # StaySwift
 
-A modern hotel booking platform built with Next.js, StaySwift offers a seamless experience for users to search, book, and manage hotel reservations with ease. Designed for performance, security, and scalability, StaySwift is your go-to solution for hassle-free hotel bookings.
+A hotel booking web app modelled on the stays experience of large travel sites. Guests search by destination, dates and party size, compare rooms and prices, book, leave reviews and manage their trips.
 
----
+Built with Next.js 14 (App Router). It runs on a local JSON database with a documented REST API, so the data layer can later be replaced by a real database and backend without changing the UI.
 
-## 🚀 Features
+## Features
 
-- 🔍 **Advanced Hotel Search**: Filter hotels by amenities, price range, star category, and more.
-- 🏨 **Hotel Details**: View detailed hotel information, ratings, reviews, and photo galleries.
-- 📅 **Booking Management**: Effortlessly book hotels, view upcoming and past bookings, and manage reservations.
-- 🔐 **Authentication**: Secure user registration, login, and social authentication.
-- 🌐 **Google Login/Register**: Sign up or log in quickly using your Google account for a seamless experience.
-- 💳 **Payment Integration**: Safe and simple payment process for hotel bookings.
-- ⭐ **Ratings & Reviews**: Leave and read reviews to help others make informed decisions.
-- 📱 **Responsive Design**: Fully optimized for mobile, tablet, and desktop devices.
+**Search and discovery**
+- Destination search with suggestions, date picker and a travelers and rooms selector
+- Results with filters (property name, price per night, guest rating, star rating, amenities) and sorting (recommended, price, guest rating, stars)
+- Filters and search live in the URL, so any result page can be shared or reloaded
+- Home page with trending destinations and top-rated stays
 
----
+**Hotel pages**
+- Photo gallery, description, amenities and policies
+- Standard, Deluxe and Suite rooms with live availability and total price for the chosen dates
+- Guest reviews with a score out of 10
 
-## 🛠️ Tech Stack & Tools
+**Booking and trips**
+- Checkout with guest details, a price breakdown (rooms, nights, taxes and fees) and the cancellation deadline
+- Availability is checked again on the server when a booking is made, so a room cannot be double-booked
+- Trips page with Upcoming, Past and Cancelled tabs, price details and free cancellation until the day before check-in
+- Reviews from guests whose stay has started (one per hotel)
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router, Server Components)
-- **Database**: MongoDB
-- **Authentication**: NextAuth.js (with Google provider)
-- **Styling**: Tailwind CSS
-- **State Management**: React Hooks
-- **API Routes**: RESTful endpoints with Next.js API routes
-- **Other Tools**: ESLint, Prettier, Vercel (deployment)
+**Accounts**
+- Email and password sign-up and sign-in (passwords hashed with bcrypt)
+- Google sign-in (optional)
+- After signing in, you return to the page you came from
 
----
+## Tech stack
 
-## 📦 Getting Started
+| Area | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router, Server Components, Route Handlers) |
+| UI | React 18, Tailwind CSS |
+| Authentication | Auth.js (`next-auth` v5) with credentials and Google providers |
+| Data | Local JSON database (`database/local`) |
+| Passwords | bcryptjs |
+| Tooling | ESLint |
 
-1. **Clone the repository:**
+## Getting started
 
-   ```bash
-   git clone https://github.com/your-username/stayswift.git
-   cd stayswift
-   ```
+### Prerequisites
 
-2. **Install dependencies:**
+- Node.js 18.17 or later
+- npm
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+### Install and run
 
-3. **Set up environment variables:**
-    - Create your own .env file and add AUTH_SECRET,MONGO_URI, GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
+```bash
+git clone https://github.com/your-username/stayswift.git
+cd stayswift
+npm install
+```
 
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to view the app.
+Create a `.env` file in the project root:
 
----
+```env
+# Required: signs session tokens. Generate one with: npx auth secret
+AUTH_SECRET=replace-with-a-long-random-string
 
-## 🧰 Project Structure
+# Optional: only needed for "Continue with Google"
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
 
-- `/app` — Application routes and pages
-- `/components` — Reusable UI components
-- `/database` — Database models, queries, and utilities
-- `/public` — Static assets
+Start the development server:
 
----
+```bash
+npm run dev
+```
 
-## 🌐 Deployment
+Open [http://localhost:3000](http://localhost:3000).
 
-StaySwift is ready for deployment on [Vercel](https://vercel.com/) or any platform supporting Next.js.
+### Demo account
 
-- **Live Demo:** [https://stay-swift-chi.vercel.app/](https://stay-swift-chi.vercel.app/)
+The seed data includes a demo guest with upcoming, past and cancelled trips and a past stay you can review:
 
----
+| Email | Password |
+|---|---|
+| `demo@stayswift.com` | `password123` |
 
-## 🤝 Contributing
+Every `@example.com` user in the seed data uses the same password.
 
-Contributions are welcome! Please open issues and submit pull requests for improvements or bug fixes.
+### Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm start` | Run the production build |
+| `npm run lint` | Run ESLint |
+
+## Project structure
+
+```
+app/
+  (home)/          Public pages: home, hotel search, hotel details, checkout, trips
+  (auth)/          Sign in and register pages
+  api/             REST endpoints (see docs/API.md)
+components/        UI components, grouped by feature (hotel, search, payment, auth, ...)
+database/
+  local/           data.js (seed data) and db.js (JSON storage)
+  queries/         Service layer: all reads, writes and business rules
+  utils/stay.js    Shared helpers: dates, room types, pricing, scores, formatting
+docs/API.md        REST API reference
+auth.js            Auth.js configuration
+```
+
+Pages and API routes both call the functions in `database/queries`, so the business rules (availability, pricing, cancellation, who may review) exist in one place.
+
+## Data and API
+
+- **Seed data:** `database/local/data.js` holds 28 hotels, 12 amenities, 15 users, 168 reviews and 172 bookings.
+- **Runtime changes:** sign-ups, bookings, cancellations and reviews are saved to `.data/db.json`, which is git-ignored. Delete that file, or increase `version` in `data.js`, to reset to the seed data.
+- **REST API:** the endpoints, request and response shapes and business rules are documented in [docs/API.md](docs/API.md). The document is written so another backend (for example ASP.NET Core) can implement the same contract.
+
+## Limitations
+
+- **Storage:** the local database writes to the `.data` folder, so it needs a writable disk. It is suited to development and demos, not to serverless hosts with a read-only file system, and it is not safe for several server instances at once. Production use needs a real database.
+- **Payments:** checkout is a demo. Card details are checked for format in the browser only and are never sent or stored.
+- **Room types:** Standard, Deluxe and Suite are derived from each hotel's low and high rates and have fixed inventory. A real backend would store them per hotel.
+- **Photos:** hotel photos are hosted externally (Airbnb CDN, allowed in `next.config.mjs`). Some links have expired; those hotels show a placeholder.
+- **Tests:** there is no automated test suite yet.
+
+## Roadmap
+
+- Replace the local database with a real database and backend, following [docs/API.md](docs/API.md)
+- Per-hotel room types and inventory
+- Real payment provider
+- Automated tests
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `npm run lint` before submitting a change.
