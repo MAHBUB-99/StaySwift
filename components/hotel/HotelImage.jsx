@@ -3,12 +3,21 @@
 import Image from "next/image";
 import { useState } from "react";
 
-// Fills its (relatively positioned) parent. Shows a grey placeholder when
-// there is no photo or the photo fails to load (some source URLs are dead).
-export default function HotelImage({ src, alt, sizes, priority = false }) {
+// Fills its (relatively positioned) parent. Tries `fallbackSrc` if `src`
+// fails, then shows a grey placeholder when there is no usable photo (some
+// source URLs are dead).
+export default function HotelImage({
+  src,
+  fallbackSrc,
+  alt,
+  sizes,
+  priority = false,
+  fit = "cover",
+}) {
+  const [current, setCurrent] = useState(src);
   const [failed, setFailed] = useState(false);
 
-  if (!src || failed) {
+  if (!current || failed) {
     return (
       <div className="absolute inset-0 grid place-items-center bg-gray-200 text-sm text-gray-500">
         No photo
@@ -17,13 +26,16 @@ export default function HotelImage({ src, alt, sizes, priority = false }) {
   }
   return (
     <Image
-      src={src}
+      src={current}
       alt={alt}
       fill
       sizes={sizes}
       priority={priority}
-      onError={() => setFailed(true)}
-      className="object-cover"
+      onError={() => {
+        if (fallbackSrc && current !== fallbackSrc) setCurrent(fallbackSrc);
+        else setFailed(true);
+      }}
+      className={fit === "contain" ? "object-contain" : "object-cover"}
     />
   );
 }

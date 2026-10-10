@@ -1,12 +1,13 @@
 import Link from "next/link";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
     <footer className="mt-16 border-t border-gray-200 bg-white">
       <div className="container flex flex-col gap-6 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-lg font-bold">StaySwift</p>
-          <p className="mt-1 max-w-sm text-sm text-gray-600">
+          <Logo />
+          <p className="mt-3 max-w-sm text-sm text-gray-600">
             Hotels and places to stay, with free cancellation on every room.
           </p>
         </div>

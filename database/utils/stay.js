@@ -164,6 +164,10 @@ export function stayQuery({ checkin, checkout, rooms, adults, children }) {
   return params.toString();
 }
 
+// The stored gallery photos are small thumbnails; the CDN serves larger sizes.
+export const hqImage = (url, width = 1200) =>
+  typeof url === "string" ? url.replace(/im_w=\d+/, `im_w=${width}`) : url;
+
 export function getRoomTypes(hotel) {
   const low = hotel?.lowRate ?? hotel?.highRate ?? 0;
   const high = hotel?.highRate ?? low;

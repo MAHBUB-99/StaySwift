@@ -1,4 +1,5 @@
 import FeaturedStays from "@/components/home/FeaturedStays";
+import Hero from "@/components/home/Hero";
 import TrendingDestinations from "@/components/home/TrendingDestinations";
 import WhyBook from "@/components/home/WhyBook";
 import SearchForm from "@/components/search/SearchForm";
@@ -23,22 +24,12 @@ export default async function Home() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-[url('/hero-bg.jpg')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-navy/50" aria-hidden="true" />
-        <div className="container relative pb-12 pt-14 md:pb-16 md:pt-20">
-          <h1 className="max-w-2xl text-3xl font-bold text-white md:text-5xl">
-            Find your next stay
-          </h1>
-          <p className="mt-3 text-lg text-white/90">
-            {destinations.length > 0
-              ? `Search hotels in ${destinations.length} destinations, with free cancellation on every room.`
-              : "Search hotels, with free cancellation on every room."}
-          </p>
-          <div className="mt-8">
-            <SearchForm destinations={destinations} />
-          </div>
-        </div>
-      </section>
+      <Hero
+        stayCount={destinations.reduce((total, item) => total + item.count, 0)}
+        destinationCount={destinations.length}
+      >
+        <SearchForm destinations={destinations} />
+      </Hero>
 
       {failed && (
         <p

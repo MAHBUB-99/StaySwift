@@ -68,12 +68,12 @@ export default function Filters({ amenities }) {
       </button>
 
       <div
-        className={`${open ? "block" : "hidden"} card mt-3 p-4 lg:mt-0 lg:block ${
+        className={`${open ? "block" : "hidden"} card mt-3 p-5 lg:sticky lg:top-24 lg:mt-0 lg:block lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto ${
           isPending ? "opacity-60" : ""
         }`}
       >
         <div className="flex items-center justify-between pb-3">
-          <h2 className="font-bold">Filter by</h2>
+          <h2 className="text-lg font-bold">Filter by</h2>
           {activeCount > 0 && (
             <button type="button" onClick={clearAll} className="link text-sm">
               Clear all

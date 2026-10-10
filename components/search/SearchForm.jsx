@@ -75,15 +75,31 @@ export default function SearchForm({
     ? "lg:grid-cols-[1.6fr_1fr_1fr_1.2fr_auto]"
     : "lg:grid-cols-[1fr_1fr_1.2fr_auto]";
 
+  // At the two-column (medium) width, destination and travelers share the
+  // first row and the dates the second. Other widths keep the source order.
+  const order = showDestination
+    ? {
+        destination: "sm:order-1 lg:order-none",
+        travelers: "sm:order-2 lg:order-none",
+        checkin: "sm:order-3 lg:order-none",
+        checkout: "sm:order-4 lg:order-none",
+        submit: "sm:order-5 lg:order-none",
+      }
+    : { destination: "", travelers: "", checkin: "", checkout: "", submit: "" };
+
   return (
     <form
       onSubmit={onSubmit}
-      className={variant === "hero" ? "card p-4 shadow-lg md:p-5" : ""}
+      className={
+        variant === "hero"
+          ? "rounded-2xl bg-white/95 p-4 shadow-2xl shadow-navy/30 ring-1 ring-white/50 backdrop-blur md:p-5"
+          : ""
+      }
       noValidate
     >
       <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${grid}`}>
         {showDestination && (
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className={order.destination}>
             <DestinationInput
               value={destination}
               onChange={setDestination}
@@ -91,7 +107,7 @@ export default function SearchForm({
             />
           </div>
         )}
-        <label className="field">
+        <label className={`field ${order.checkin}`}>
           <span className="field-label">Check-in</span>
           <input
             type="date"
@@ -100,7 +116,7 @@ export default function SearchForm({
             onChange={(event) => onCheckinChange(event.target.value)}
           />
         </label>
-        <label className="field">
+        <label className={`field ${order.checkout}`}>
           <span className="field-label">Check-out</span>
           <input
             type="date"
@@ -109,8 +125,13 @@ export default function SearchForm({
             onChange={(event) => setCheckout(event.target.value)}
           />
         </label>
-        <TravelersPicker value={travelers} onChange={setTravelers} />
-        <button type="submit" className="btn-primary h-14 px-8 sm:col-span-2 lg:col-span-1">
+        <div className={order.travelers}>
+          <TravelersPicker value={travelers} onChange={setTravelers} />
+        </div>
+        <button
+          type="submit"
+          className={`btn-primary h-14 px-8 sm:col-span-2 lg:col-span-1 ${order.submit}`}
+        >
           {showDestination ? "Search" : "Check availability"}
         </button>
       </div>
